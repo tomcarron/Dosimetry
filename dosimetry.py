@@ -14,17 +14,31 @@ distance_measurements = pd.read_csv('data/Distance_measurements.csv')[:-2]
 neutron_activity = pd.read_csv('data/Neutron_Activity.csv')[:-3]
 shielding_Al = pd.read_csv('data/Shielding.csv')[:-7]
 shielding_Pb = pd.read_csv('data/Shielding.csv')[8:]
+
 '''
-print(distance)
-print(neutron_activity)
-print(shielding_Al)
-print(shielding_Pb)
+Distance measurements to arrays
 '''
 distance=(distance_measurements.to_numpy()[:,0]).astype(np.float64)
 Cs_x_counts=(distance_measurements.to_numpy()[:,1]).astype(np.float64)
 Co_x_counts=(distance_measurements.to_numpy()[:,2]).astype(np.float64)
 Cs2_x_counts=(distance_measurements.to_numpy()[:,3]).astype(np.float64)
 Na_x_counts=(distance_measurements.to_numpy()[:,4]).astype(np.float64)
+
+'''
+shielding measurements to array
+'''
+al_shielding=(shielding_Al.to_numpy()[1:,0]).astype(np.float64)
+al_shield_counts=(shielding_Al.to_numpy()[1:,1]).astype(np.float64)
+pb_shielding=(shielding_Pb.to_numpy()[1:,0]).astype(np.float64)
+pb_shield_counts=(shielding_Pb.to_numpy()[1:,1]).astype(np.float64)
+
+'''
+Neutron activity measurements to arrays
+'''
+neutron_N=(neutron_activity.to_numpy()[:,0]).astype(np.float64)
+neutron_tf=(neutron_activity.to_numpy()[:,1]).astype(np.float64)
+neutron_dt=(neutron_activity.to_numpy()[:,2]).astype(np.float64)
+
 
 plt.figure(0)
 plt.scatter(distance,Cs_x_counts)
