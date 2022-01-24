@@ -24,13 +24,13 @@ Distance measurements to arrays. counts measured for 60s
 '''
 distance=(distance_measurements.to_numpy()[:,0]).astype(np.float64)
 Cs_x_counts=(distance_measurements.to_numpy()[:,1]).astype(np.float64)
-Cs_x_N=Cs_x_counts-np.full(len(Cs_x_counts),background_per_minute)   #Background subtracted
+Cs_x_N=((Cs_x_counts-np.full(len(Cs_x_counts),background_per_minute) ) /60 ) #Background subtracted and converted to per second
 Co_x_counts=(distance_measurements.to_numpy()[:,2]).astype(np.float64)
-Co_x_N=Co_x_counts-np.full(len(Co_x_counts),background_per_minute)   #Background subtracted
+Co_x_N=((Co_x_counts-np.full(len(Co_x_counts),background_per_minute) ) /60 )  #Background subtracted and converted to per second
 Cs2_x_counts=(distance_measurements.to_numpy()[:,3]).astype(np.float64)
-Cs2_x_N=Cs2_x_counts-np.full(len(Cs2_x_counts),background_per_minute)   #Background subtracted
+Cs2_x_N=((Cs2_x_counts-np.full(len(Cs2_x_counts),background_per_minute) ) /60 )  #Background subtracted and converted to per second
 Na_x_counts=(distance_measurements.to_numpy()[:,4]).astype(np.float64)
-Na_x_N=Na_x_counts-np.full(len(Na_x_counts),background_per_minute)  #Background subtracted
+Na_x_N=((Na_x_counts-np.full(len(Na_x_counts),background_per_minute) ) /60 ) #Background subtracted and converted to per second
 
 '''
 shielding measurements to array
@@ -48,30 +48,48 @@ neutron_tf=(neutron_activity.to_numpy()[:,1]).astype(np.float64)
 neutron_dt=(neutron_activity.to_numpy()[:,2]).astype(np.float64)
 
 '''
+Functions for errors etc
+'''
+#Ndot ^-0.5, takes N per second
+def Ndot_exponent(N):
+    y=N**(-0.5)
+    return y
+
+#error in Ndot ^-1/2, takes N, t and error in t
+def err_Ndot_exponent(N,t,dt):
+    Ndot_exp=Ndot_exponent(N)
+    dN=np.sqrt(N)
+    y=Ndot_exp*np.sqrt(((-0.5*dN)/N)**2+((-0.5*dt)/t)**2)
+    return y
+'''
 Plotting distance measurements
 '''
+t=1
+dt=1/60
+dx=0.1
+
 plt.figure(0)
-plt.scatter(distance,Cs_x_N)
-plt.xlabel('distance (cm)')
-plt.ylabel('Counts')
+plt.errorbar(distance,Ndot_exponent(Cs_x_N),err_Ndot_exponent(Cs_x_N,t,dt),dx,'.')
+plt.xlabel('x (cm)')
+plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
 plt.savefig('plots/Cs_dist.png',dpi=400,bbox_inches='tight')
 
 plt.figure(1)
-plt.scatter(distance,Co_x_N)
-plt.xlabel('distance (cm)')
-plt.ylabel('Counts')
+plt.errorbar(distance,Ndot_exponent(Co_x_N),err_Ndot_exponent(Co_x_N,t,dt),dx,'.')
+plt.xlabel('x (cm)')
+plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
 plt.savefig('plots/Co_dist.png',dpi=400,bbox_inches='tight')
 
 plt.figure(2)
-plt.scatter(distance,Cs2_x_N)
-plt.xlabel('distance (cm)')
-plt.ylabel('Counts')
+plt.errorbar(distance,Ndot_exponent(Cs2_x_N),err_Ndot_exponent(Cs2_x_N,t,dt),dx,'.')
+plt.xlabel('x (cm)')
+plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
 plt.savefig('plots/Cs2_dist.png',dpi=400,bbox_inches='tight')
 
 plt.figure(3)
-plt.scatter(distance,Na_x_N)
-plt.xlabel('distance (cm)')
-plt.ylabel('Counts')
+plt.errorbar(distance,Ndot_exponent(Na_x_N),err_Ndot_exponent(Na_x_N,t,dt),dx,'.')
+plt.xlabel('x (cm)')
+plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
 plt.savefig('plots/Na_dist.png',dpi=400,bbox_inches='tight')
 
 '''
