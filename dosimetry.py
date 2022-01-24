@@ -14,9 +14,13 @@ distance_measurements = pd.read_csv('data/Distance_measurements.csv')[:-2]
 neutron_activity = pd.read_csv('data/Neutron_Activity.csv')[:-3]
 shielding_Al = pd.read_csv('data/Shielding.csv')[:-7]
 shielding_Pb = pd.read_csv('data/Shielding.csv')[8:]
+background_time=60*60 + 60*14 +7 #1hr 14 mins and 7 seconds in seconds. Time the background radiation is measured for
+background_N=3311
+background_per_minute=(background_N/background_time)*60
+Neutron_offset_t=103  #offset for source to detector time for neutron activity experiment
 
 '''
-Distance measurements to arrays
+Distance measurements to arrays. counts measured for 60s
 '''
 distance=(distance_measurements.to_numpy()[:,0]).astype(np.float64)
 Cs_x_counts=(distance_measurements.to_numpy()[:,1]).astype(np.float64)
@@ -39,7 +43,9 @@ neutron_N=(neutron_activity.to_numpy()[:,0]).astype(np.float64)
 neutron_tf=(neutron_activity.to_numpy()[:,1]).astype(np.float64)
 neutron_dt=(neutron_activity.to_numpy()[:,2]).astype(np.float64)
 
-
+'''
+Plotting distance measurements
+'''
 plt.figure(0)
 plt.scatter(distance,Cs_x_counts)
 plt.xlabel('distance (cm)')
@@ -64,5 +70,8 @@ plt.xlabel('distance (cm)')
 plt.ylabel('Counts')
 plt.savefig('plots/Na_dist.png',dpi=400,bbox_inches='tight')
 
+'''
+
+'''
 
 plt.show()
