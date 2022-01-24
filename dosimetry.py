@@ -68,29 +68,60 @@ t=1
 dt=1/60
 dx=0.1
 
+'''
+Counts for 1 second vs x
+'''
 plt.figure(0)
+#plt.scatter(distance,Cs_x_counts)
+plt.errorbar(distance,Cs_x_N,np.sqrt(Cs_x_N),0.1,'.')
+plt.xlabel('distance (cm)')
+plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.savefig('plots/Cs_dist_1s.png',dpi=400,bbox_inches='tight')
+
+plt.figure(1)
+#plt.scatter(distance,Co_x_counts)
+plt.errorbar(distance,Co_x_N,np.sqrt(Co_x_N),0.1,'.')
+plt.xlabel('distance (cm)')
+plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.savefig('plots/Co_dist_1s.png',dpi=400,bbox_inches='tight')
+
+plt.figure(2)
+#plt.scatter(distance,Cs2_x_counts)
+plt.errorbar(distance,Cs2_x_N,np.sqrt(Cs2_x_N),0.1,'.')
+plt.xlabel('distance (cm)')
+plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.savefig('plots/Cs2_dist_1s.png',dpi=400,bbox_inches='tight')
+
+plt.figure(3)
+#plt.scatter(distance,Na_x_counts)
+plt.errorbar(distance,Na_x_N,np.sqrt(Na_x_N),0.1,'.')
+plt.xlabel('distance (cm)')
+plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.savefig('plots/Na_dist_1s.png',dpi=400,bbox_inches='tight')
+
+plt.figure(4)
 plt.errorbar(distance,Ndot_exponent(Cs_x_N),err_Ndot_exponent(Cs_x_N,t,dt),dx,'.')
 plt.xlabel('x (cm)')
 plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
-plt.savefig('plots/Cs_dist.png',dpi=400,bbox_inches='tight')
+plt.savefig('plots/Cs_dist_mod.png',dpi=400,bbox_inches='tight')
 
-plt.figure(1)
+plt.figure(5)
 plt.errorbar(distance,Ndot_exponent(Co_x_N),err_Ndot_exponent(Co_x_N,t,dt),dx,'.')
 plt.xlabel('x (cm)')
 plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
-plt.savefig('plots/Co_dist.png',dpi=400,bbox_inches='tight')
+plt.savefig('plots/Co_dist_mod.png',dpi=400,bbox_inches='tight')
 
-plt.figure(2)
+plt.figure(6)
 plt.errorbar(distance,Ndot_exponent(Cs2_x_N),err_Ndot_exponent(Cs2_x_N,t,dt),dx,'.')
 plt.xlabel('x (cm)')
 plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
-plt.savefig('plots/Cs2_dist.png',dpi=400,bbox_inches='tight')
+plt.savefig('plots/Cs2_dist_mod.png',dpi=400,bbox_inches='tight')
 
-plt.figure(3)
+plt.figure(7)
 plt.errorbar(distance,Ndot_exponent(Na_x_N),err_Ndot_exponent(Na_x_N,t,dt),dx,'.')
 plt.xlabel('x (cm)')
 plt.ylabel(r'$\dot N^{-\frac{1}{2}}$',fontsize='large',rotation='horizontal')
-plt.savefig('plots/Na_dist.png',dpi=400,bbox_inches='tight')
+plt.savefig('plots/Na_dist_mod.png',dpi=400,bbox_inches='tight')
 
 '''
 
