@@ -76,7 +76,7 @@ def calculate(N,t):
     N_mod_err=np.sqrt((N_s_err)**2 + (B_s_err)**2)  #error in count rate with background subtracted
     N_dot_exp=N_mod**(-0.5)                  #raising count rate with subtracted background to power of -1/2
     err_Ndot_exp=0.5*(N_mod**(-3/2))*N_mod_err      #error in Ndot ^-1/2 --> error in counts, time, background counts, background time and propagation via formulas all accounted for.
-    return N_dot_exp, err_Ndot_exp
+    return N_dot_exp, err_Ndot_exp, N_s, N_s_err
 
 def linear(x,a,c):
     y=c+a*x
@@ -87,6 +87,21 @@ def y_fit_error(a,da,x,dx,c,dc):
     dy=y*np.sqrt((da/a)**2 + (dx/x)**2 + (dc/c)**2)
     return dy
 
+def cal_factor(D_dot,err_D_dot,N_dot,err_N_dot):
+    epsilon=D_dot/N_dot
+    err_epsilon=np.sqrt(((N_dot)**2 * (err_D_dot)**2)+((D_dot)**2 * (err_N_dot)**2))
+    return epsilon, err_epsilon
+
+def dose_rate(Dose_const,A,x):
+    y=(Dose_const*A)/(x**2)
+    return y
+
+'''
+Dose constants in units of J m^2 kg^-1
+'''
+Cs_DC=2.359e-12
+Co_DC=8.928e-12
+Na_DC=4.544e-12
 
 '''
 Plotting distance measurements
