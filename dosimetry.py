@@ -92,9 +92,13 @@ def cal_factor(D_dot,err_D_dot,N_dot,err_N_dot):
     err_epsilon=np.sqrt(((N_dot)**2 * (err_D_dot)**2)+((D_dot)**2 * (err_N_dot)**2))
     return epsilon, err_epsilon
 
-def dose_rate(Dose_const,A,x):
-    y=(Dose_const*A)/(x**2)
-    return y
+def dose_rate(Dose_const,A,x,x0,dx,dx0):
+    d=x-x0
+    dd=np.sqrt(dx**2+dx0**2)
+    dA=np.sqrt(A)
+    y=(Dose_const*A)/(d**2)
+    y_err=np.sqrt(((Dose_const/(x**2))*dA)**2+((2*Dose_const*A)/(x**3))**2)
+    return y, y_err
 
 '''
 Dose constants in units of J m^2 kg^-1
@@ -115,28 +119,31 @@ Counts for 1 second vs x
 '''
 plt.figure(0)
 #plt.scatter(distance,Cs_x_counts)
-plt.errorbar(distance,Cs_x_N,np.sqrt(Cs_x_N),0.1,'.')
+plt.errorbar(distance,Cs_x_N,np.sqrt(Cs_x_N),0.1,'.',label='Cs-137')
 plt.xlabel('distance (cm)')
 plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.legend()
 plt.savefig('plots/Cs_dist_1s.png',dpi=400,bbox_inches='tight')
 
 plt.figure(1)
 #plt.scatter(distance,Co_x_counts)
-plt.errorbar(distance,Co_x_N,np.sqrt(Co_x_N),0.1,'.')
+plt.errorbar(distance,Co_x_N,np.sqrt(Co_x_N),0.1,'.',label='Co')
 plt.xlabel('distance (cm)')
 plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.legend()
 plt.savefig('plots/Co_dist_1s.png',dpi=400,bbox_inches='tight')
 
 plt.figure(2)
 #plt.scatter(distance,Cs2_x_counts)
-plt.errorbar(distance,Cs2_x_N,np.sqrt(Cs2_x_N),0.1,'.')
+plt.errorbar(distance,Cs2_x_N,np.sqrt(Cs2_x_N),0.1,'.',label='Cs2')
 plt.xlabel('distance (cm)')
 plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
+plt.legend()
 plt.savefig('plots/Cs2_dist_1s.png',dpi=400,bbox_inches='tight')
 
 plt.figure(3)
 #plt.scatter(distance,Na_x_counts)
-plt.errorbar(distance,Na_x_N,np.sqrt(Na_x_N),0.1,'.')
+plt.errorbar(distance,Na_x_N,np.sqrt(Na_x_N),0.1,'.',label='Na')
 plt.xlabel('distance (cm)')
 plt.ylabel('$\dot N$',rotation='horizontal',fontsize='large')
 plt.legend()
@@ -144,6 +151,10 @@ plt.savefig('plots/Na_dist_1s.png',dpi=400,bbox_inches='tight')
 '''
 N^-1/2
 '''
+
+#array to store X0 values
+x0s=[]
+
 
 distance_2=np.linspace(-2,16,300)
 popt_Cs, pcov_Cs = curve_fit(linear, distance, calculate(Cs_x_counts,60)[0])#, bounds=(0, [3., 1., 0.5]))
@@ -161,7 +172,7 @@ while i < len(distance_2):
         i=i+1
 
 print('Cs','x0=',Cs_x0,'y0=',Cs_y_x0)
-
+x0s.append(Cs_x0)
 
 plt.figure(4)
 plt.errorbar(distance,calculate(Cs_x_counts,60)[0],calculate(Cs_x_counts,60)[1],dx,'.',label='Cs-137')
@@ -188,6 +199,7 @@ while i < len(distance_2):
         i=i+1
 
 print('Co','x0=',Co_x0,'y0=',Co_y_x0)
+x0s.append(Co_x0)
 
 plt.figure(5)
 plt.errorbar(distance,calculate(Co_x_counts,60)[0],calculate(Co_x_counts,60)[1],dx,'.',label='Co-60')
@@ -213,6 +225,7 @@ while i < len(distance_2):
         i=i+1
 
 print('Cs2','x0=',Cs2_x0,'y0=',Cs2_y_x0)
+x0s.append(Cs2_x0)
 
 plt.figure(6)
 plt.errorbar(distance,calculate(Cs2_x_counts,60)[0],calculate(Cs2_x_counts,60)[1],dx,'.',label='Cs-137 (source 2)')
@@ -237,6 +250,7 @@ while i < len(distance_2):
         i=i+1
 
 print('Na','x0=',Na_x0,'y0=',Na_y_x0)
+x0s.append(Na_x0)
 
 plt.figure(7)
 plt.errorbar(distance,calculate(Na_x_counts,60)[0],calculate(Na_x_counts,60)[1],dx,'.',label='Na-22')
@@ -251,5 +265,12 @@ plt.savefig('plots/Na_dist_mod.png',dpi=400,bbox_inches='tight')
 '''
 
 '''
+print(x0s)
+'''
+Calculating dose rates. use largest distance-x0 and count rate as activity.
+'''
+#Cs (first source)
+D_dot_Cs=dose_rate(Cs_DC,Cs_x_N[0],distance[0],Cs_x0,0.1,0.1)
+print(D_dot_Cs[0],'p/m',D_dot_Cs[1],'Dose rate of Cs-137 in W/kg')
 
 plt.show()
