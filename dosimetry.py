@@ -76,7 +76,7 @@ def calculate(N,t):
     N_mod_err=np.sqrt((N_s_err)**2 + (B_s_err)**2)  #error in count rate with background subtracted
     N_dot_exp=N_mod**(-0.5)                  #raising count rate with subtracted background to power of -1/2
     err_Ndot_exp=0.5*(N_mod**(-3/2))*N_mod_err      #error in Ndot ^-1/2 --> error in counts, time, background counts, background time and propagation via formulas all accounted for.
-    return N_dot_exp, err_Ndot_exp, N_s, N_s_err
+    return N_dot_exp, err_Ndot_exp, N_mod, N_mod_err
 
 def linear(x,a,c):
     y=c+a*x
@@ -89,15 +89,15 @@ def y_fit_error(a,da,x,dx,c,dc):
 
 def cal_factor(D_dot,err_D_dot,N_dot,err_N_dot):
     epsilon=D_dot/N_dot
-    err_epsilon=np.sqrt(((N_dot)**2 * (err_D_dot)**2)+((D_dot)**2 * (err_N_dot)**2))
-    return epsilon, err_epsilon
+    sqrt=np.sqrt((err_N_dot/N_dot)**2 + (err_D_dot/D_dot)**2)
+    err_epsilon=epsilon*np.sqrt((err_N_dot/N_dot)**2 + (err_D_dot/D_dot)**2)
+    return epsilon, err_epsilon, sqrt
 
-def dose_rate(Dose_const,A,x,x0,dx,dx0):
+def dose_rate(Dose_const,A,dA,x,x0,dx,dx0):
     d=x-x0
-    dd=np.sqrt(dx**2+dx0**2)
-    dA=np.sqrt(A)
+    dd=np.sqrt((dx**2)+(dx0**2))
     y=(Dose_const*A)/(d**2)
-    y_err=np.sqrt(((Dose_const/(x**2))*dA)**2+((2*Dose_const*A)/(x**3))**2)
+    y_err=np.sqrt( (((Dose_const*dA)/(d**2))**2) +(((-2*Dose_const*A*dd)/(d**3))**2) )
     return y, y_err
 
 '''
@@ -270,7 +270,41 @@ print(x0s)
 Calculating dose rates. use largest distance-x0 and count rate as activity.
 '''
 #Cs (first source)
-D_dot_Cs=dose_rate(Cs_DC,Cs_x_N[0],distance[0],Cs_x0,0.1,0.1)
+D_dot_Cs=dose_rate(Cs_DC,calculate(Cs_x_counts[0],60)[2],calculate(Cs_x_counts[0],60)[3],distance[0],Cs_x0,0.1,0.1)
 print(D_dot_Cs[0],'p/m',D_dot_Cs[1],'Dose rate of Cs-137 in W/kg')
 
+#Calibration factor with error calculated using strongest Cs source
+cal_fac_Cs=cal_factor(D_dot_Cs[0],D_dot_Cs[1],calculate(Cs_x_counts[0],60)[2],calculate(Cs_x_counts[0],60)[3])
+print("epsilon=",cal_fac_Cs[0],"p/m",cal_fac_Cs[1],"sqrt:",cal_fac_Cs[2])
+print('dist',distance)
 plt.show()
+
+'''
+version of calculate for debugging
+def calculate(N,t):
+    B=background_N                                  #measured background counts
+    print('B',B)
+    bt=background_time                              #time measuring background in s
+    print('bt',bt)
+    N_s=N/t                                         #count rate
+    print('N_S',N_s)
+    dt=1/t                                          #error of 1s in measured time.
+    print('dt',dt)
+    N_s_err=np.sqrt(N_s+dt**2)                   #err in count rate
+    print('N_s_err',N_s_err)
+    B_s=B/bt                                        #background count rate
+    print('B_s',B_s)
+    dbt=1/bt                                        # error of 1s in measured time
+    print('dbt',dbt)
+    B_s_err=np.sqrt(B_s**2+dbt**2)                  #err in background count rate
+    print('B_s_err',B_s_err)
+    N_mod=N_s-B_s                                   #count rate with background subtracted
+    print('N_mod',N_mod)
+    N_mod_err=np.sqrt((N_s_err)**2 + (B_s_err)**2)  #error in count rate with background subtracted
+    print('N_mod_err',N_mod_err)
+    N_dot_exp=N_mod**(-0.5)                  #raising count rate with subtracted background to power of -1/2
+    print('N_dot_exp',N_dot_exp)
+    err_Ndot_exp=0.5*(N_mod**(-3/2))*N_mod_err      #error in Ndot ^-1/2 --> error in counts, time, background counts, background time and propagation via formulas all accounted for.
+    print('err_Ndot_exp',err_Ndot_exp)
+    return N_dot_exp, err_Ndot_exp, N_mod, N_mod_err
+    '''
