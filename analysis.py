@@ -45,6 +45,7 @@ neutron_dt=(neutron_activity.to_numpy()[:,2]).astype(np.float64)
 Dose constants in units of J m^2 kg^-1
 '''
 Cs_DC=2.359e-12
+Cs2_DC=2.359e-12
 Co_DC=8.928e-12
 Na_DC=4.544e-12
 
@@ -96,14 +97,30 @@ def linear(x,a,c):
     y=c+a*x
     return y
 
+def activity(epsilon,a,Dose_const):
+    activity=epsilon/(Dose_const*a**2)
+    return activity
+
 '''
 #calculating x0
 '''
 distance_2=np.linspace(-2,16,300)
 popt_Cs, pcov_Cs = curve_fit(linear, distance, calculate(Cs_x_counts,60)[0])
+Cs_perr = np.sqrt(np.diag(pcov_Cs))
+print('Cs_popt',popt_Cs)
+print('Cs_perr',Cs_perr)
 popt_Co, pcov_Co = curve_fit(linear, distance, calculate(Co_x_counts,60)[0])
+Co_perr = np.sqrt(np.diag(pcov_Co))
+print('Co_popt',popt_Co)
+print('Co_perr',Co_perr)
 popt_Cs2, pcov_Cs2 = curve_fit(linear, distance, calculate(Cs2_x_counts,60)[0])
+Cs2_perr = np.sqrt(np.diag(pcov_Cs2))
+print('Cs2_popt',popt_Cs2)
+print('Cs2_perr',Cs2_perr)
 popt_Na, pcov_Na = curve_fit(linear, distance, calculate(Na_x_counts,60)[0])
+Na_perr = np.sqrt(np.diag(pcov_Na))
+print('Na_popt',popt_Na)
+print('Na_perr',Na_perr)
 
 Cs_fit_y=popt_Cs[0]*distance_2 + popt_Cs[1]
 i=0
@@ -148,6 +165,10 @@ while i < len(distance_2):
     else:
         i=i+1
 
+print('Cs_x0',Cs_x0)
+print('Co_x0',Co_x0)
+print('Na_x0',Na_x0)
+print('Cs2_x0',Cs2_x0)
 #print(calculate(Cs_x_counts[0],60))
 '''
 Calculating dose rates. use largest distance-x0 and count rate as activity.
@@ -159,6 +180,15 @@ print(D_dot_Cs[0],'p/m',D_dot_Cs[1],'Dose rate of Cs-137 in W/kg')
 #Calibration factor with error calculated using strongest Cs source
 cal_fac_Cs=cal_factor(D_dot_Cs[0],D_dot_Cs[1],calculate(Cs_x_counts[0],60)[2],calculate(Cs_x_counts[0],60)[3])
 print("epsilon=",cal_fac_Cs[0],"p/m",cal_fac_Cs[1],"sqrt:",cal_fac_Cs[2])
+
+D_dot_Co=dose_rate(Co_DC,calculate(Co_x_counts[0],60)[2],calculate(Co_x_counts[0],60)[3],distance[0],Co_x0,0.1,0.1)
+cal_fac_Co=cal_factor(D_dot_Co[0],D_dot_Co[1],calculate(Co_x_counts[0],60)[2],calculate(Co_x_counts[0],60)[3])
+
+D_dot_Cs2=dose_rate(Cs2_DC,calculate(Cs2_x_counts[0],60)[2],calculate(Cs2_x_counts[0],60)[3],distance[0],Cs2_x0,0.1,0.1)
+cal_fac_Cs2=cal_factor(D_dot_Cs2[0],D_dot_Cs2[1],calculate(Cs2_x_counts[0],60)[2],calculate(Cs2_x_counts[0],60)[3])
+
+D_dot_Na=dose_rate(Na_DC,calculate(Na_x_counts[0],60)[2],calculate(Na_x_counts[0],60)[3],distance[0],Na_x0,0.1,0.1)
+cal_fac_Na=cal_factor(D_dot_Na[0],D_dot_Na[1],calculate(Na_x_counts[0],60)[2],calculate(Na_x_counts[0],60)[3])
 '''
 #plots
 '''
@@ -237,4 +267,56 @@ plt.legend(loc='upper left')
 plt.ylim(0)
 plt.xlim(0)
 plt.savefig('plots/Na_dist_mod.png',dpi=400,bbox_inches='tight')
+
+
+
+
+'''
+Calculate the activities using the fit parameters
+'''
+activities=[]
+activities.append(activity(cal_fac_Cs[0],popt_Cs[0],Cs_DC))
+activities.append(activity(cal_fac_Co[0],popt_Co[0],Co_DC))
+activities.append(activity(cal_fac_Cs2[0],popt_Cs2[0],Cs2_DC))
+activities.append(activity(cal_fac_Na[0],popt_Na[0],Na_DC))
+
+print(activities,"Cs,Co,Cs2,Na")
+
+
+"""
+calculate the sum of all four dose rates at a distance of 1m. How long til 1.5mSv?
+"""
+
+def sum_dose_rates(x):
+    y=0
+    y=y+dose_rate(Cs_DC,calculate(Cs_x_counts[0],60)[2],calculate(Cs_x_counts[0],60)[3],x,Cs_x0,0.1,0.1)[0]
+    y=y+dose_rate(Co_DC,calculate(Co_x_counts[0],60)[2],calculate(Co_x_counts[0],60)[3],x,Co_x0,0.1,0.1)[0]
+    y=y+dose_rate(Cs2_DC,calculate(Cs2_x_counts[0],60)[2],calculate(Cs2_x_counts[0],60)[3],x,Cs2_x0,0.1,0.1)[0]
+    y=y+dose_rate(Na_DC,calculate(Na_x_counts[0],60)[2],calculate(Na_x_counts[0],60)[3],x,Na_x0,0.1,0.1)[0]
+    #takes x in cm and returns Ddot in W/kg
+    return y
+
+total_dose_rate=sum_dose_rates(100)
+print("total dose rate",total_dose_rate)
+
+#Quality factor=1
+#total dose rate is Sv per second, t x total_dose_rate = 1.5mSv
+
+time=1.5e-3 / total_dose_rate
+print("time to 1.5mSv in seconds",time)
+
+time2=((time/3600)/24)/365
+print("time to 1.5mSv in years",time2)
+
+
+#Calculate the measured dose rate of background radiation
+
+
+
+
+
+
+
+
+
 plt.show()
